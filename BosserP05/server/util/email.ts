@@ -6,7 +6,7 @@ const transporter = nodemailer.createTransport({
   secure: true,
   auth: {
     user: "tungtungsahurgpt@gmail.com",
-    pass: "gqbcodsvpotjeecl", // 🔥 Nuevo App Password SIN espacios
+    pass: "gqbcodsvpotjeecl", //  App Password SIN espacios
   },
 });
 

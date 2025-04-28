@@ -1,4 +1,4 @@
-import { Bson } from "../../deps.ts"; // Usa ruta relativa hacia tu deps.ts
+import { Bson } from "../../deps.ts";
 
 export interface Package {
   _id?: Bson.ObjectId;
@@ -8,6 +8,5 @@ export interface Package {
   tipo: "Normal" | "Congelado" | "Frágil" | "Urgente";
   estado: "Pendiente" | "Entregado";
   fecha_recepcion: Date;
-  fecha_entrega?: Date;
-  notificado: boolean;
+  notificado: boolean;  // Si ya se notificó al destinatario
 }
