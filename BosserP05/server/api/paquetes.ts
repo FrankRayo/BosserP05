@@ -14,10 +14,11 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
   const body = await ctx.request.body({ type: "form" }).value;
 
   const tracking_id = body.get("tracking_id") ?? "";
-  const destinatario = body.get("destinatario") ?? "";
+  const destinatario = body.get("destinatario") ?? ""; // Valor predeterminado vacío
   const departamento = body.get("departamento") ?? "";
   const tipo = (body.get("tipo") as "Normal" | "Congelado" | "Frágil" | "Urgente") ?? "Normal";
 
+  // Validación de campos obligatorios vacios
   if (!tracking_id || !destinatario || !departamento || !tipo) {
     ctx.response.status = 400;
     ctx.response.body = { message: "❌ Todos los campos son obligatorios." };
