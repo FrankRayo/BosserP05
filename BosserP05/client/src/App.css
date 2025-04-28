@@ -1,42 +1,66 @@
+/* Aplicar el gradiente de fondo al body */
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg, rgba(12, 6, 138, 1) 0%, rgba(0, 221, 255, 1) 0%, rgba(235, 252, 255, 1) 100%);
+  background-repeat: no-repeat; /* Evitar que se repita si se estira */
+  background-attachment: fixed; /* Hacer que el fondo se mantenga al scrollear */
+  background-size: cover; /* Asegurar que cubra toda el área */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  min-height: 100vh; /* Al menos la altura completa de la ventana, pero permite crecer */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Centrado y estilos generales para el contenido */
 #root {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
 }
 
+.custom-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #343a40;
+}
+
+/* Estilos para el logo */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
+/* Anima el logo cuando no se prefieren movimientos reducidos */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
+/* Tarjetas - Puede que necesites más personalización dependiendo del diseño */
 .card {
   padding: 2em;
 }
 
+/* Estilos para los enlaces */
 .read-the-docs {
   color: #888;
+  text-decoration: none; /* Eliminar subrayado por defecto */
+}
+
+.read-the-docs:hover {
+  color: #0056b3;
 }
