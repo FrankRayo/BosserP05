@@ -1,4 +1,3 @@
-// client/src/pages/Home.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Package } from "../../../server/models/packageModel.ts";
@@ -13,35 +12,38 @@ export default function Home() {
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [departamento, setDepartamento] = useState("");
-  const [message, setMessage] = useState("");
   const [pendingPackages, setPendingPackages] = useState<Package[]>([]);
 
-  const navigate = useNavigate(); // Usamos useNavigate para redirigir
+  const navigate = useNavigate();
+
+  // Funciones de notificación
+  const notifySuccess = (msg: string) => toast.success(msg, { position: "top-center", autoClose: 3000 });
+  const notifyError = (msg: string) => toast.error(msg, { position: "top-center", autoClose: 3000 });
 
   // Función para login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const res = await fetch("/api/verify_resident", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-  
+
     const result = await res.json();
-  
+
     if (result.success) {
-      // Almacenar los paquetes y el departamento en localStorage
       setPendingPackages(result.packages);
       localStorage.setItem("pendingPackages", JSON.stringify(result.packages));
-      localStorage.setItem("departamento", result.departamento); // opcional si quieres guardar también el departamento
-  
-      navigate("/paquetes"); // Redirigir a la página de paquetes
+      localStorage.setItem("departamento", result.departamento);
+
+      notifySuccess("¡Login exitoso! 🎉");
+      navigate("/paquetes");
     } else {
-      setMessage("Credenciales incorrectas.");
+      notifyError("Credenciales incorrectas ❌");
     }
   };
-  
+
   // Función para signup (registro)
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,24 +56,19 @@ export default function Home() {
 
     const result = await res.json();
 
-    if (result.message) {
-      setMessage(result.message); // Mensaje de éxito
-      setMode("login_residente"); // Cambiar a login después de registro
-      navigate("/"); // Redirigir al login después de un registro exitoso
+    if (res.ok) {
+      notifySuccess("¡Registro exitoso! Inicia sesión ahora.");
+      setMode("login_residente");
+      navigate("/");
     } else {
-      toast.error("Correo incorrecto.", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      setMessage("");
+      notifyError("Error en el registro ❌");
     }
   };
 
   return (
     <div className="container py-4">
       <Sidebar onHomeClick={() => setMode("inicio")} />
-      
-      {/* Toast container para mostrar los toasts */}
+
       <ToastContainer aria-label="Notification container" />
 
       {/* Sección de selección de modo de ingreso */}
@@ -79,18 +76,10 @@ export default function Home() {
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Selecciona Modo de Ingreso</h1>
           <div className="d-flex justify-content-center gap-4">
-            <button
-              type="button"
-              onClick={() => setMode("conserje")}
-              className="btn btn-primary"
-            >
+            <button type="button" onClick={() => setMode("conserje")} className="btn btn-primary">
               Modo Conserjería
             </button>
-            <button
-              type="button"
-              onClick={() => setMode("login_residente")}
-              className="btn btn-success"
-            >
+            <button type="button" onClick={() => setMode("login_residente")} className="btn btn-success">
               Modo Residente
             </button>
           </div>
@@ -126,21 +115,16 @@ export default function Home() {
               Ingresar
             </button>
           </form>
-          {message && <p className="mt-4 text-red-500">{message}</p>}
-
-          {/* Botón para cambiar a la vista de Signup */}
           <div className="mt-4 text-center">
             <span>¿No tienes cuenta? </span>
-            <button
-              onClick={() => setMode("signup")}
-              className="text-blue-600 hover:underline"
-            >
+            <button onClick={() => setMode("signup")} className="text-blue-600 hover:underline">
               Regístrate aquí
             </button>
           </div>
         </div>
       )}
 
+      {/* Sección de registro de residente */}
       {mode === "signup" && (
         <div>
           <h2 className="text-xl font-semibold mb-2">Registrar Residente</h2>
@@ -189,49 +173,28 @@ export default function Home() {
               Registrar
             </button>
           </form>
-          {message && <p className="mt-4 text-red-500">{message}</p>}
-
-          {/* Botón para cambiar a la vista de Login */}
           <div className="mt-4 text-center">
             <span>¿Ya tienes cuenta? </span>
-            <button
-              onClick={() => setMode("login_residente")}
-              className="text-blue-600 hover:underline"
-            >
+            <button onClick={() => setMode("login_residente")} className="text-blue-600 hover:underline">
               Inicia sesión aquí
             </button>
           </div>
         </div>
       )}
 
-      {/* Sección de conserje */}
+      {/* Sección de registro de paquetes (Conserje) */}
       {mode === "conserje" && (
         <div className="mt-4">
           <h2 className="text-xl font-semibold mb-4">Registrar nuevo paquete</h2>
           <form action="/api/paquetes" method="POST" className="space-y-3">
             <div className="p-1">
-              <input
-                name="tracking_id"
-                placeholder="Tracking ID"
-                required
-                className="form-control"
-              />
+              <input name="tracking_id" placeholder="Tracking ID" required className="form-control" />
             </div>
             <div className="p-1">
-              <input
-                name="destinatario"
-                placeholder="Correo del destinatario"
-                required
-                className="form-control"
-              />
+              <input name="destinatario" placeholder="Correo del destinatario" required className="form-control" />
             </div>
             <div className="p-1">
-              <input
-                name="departamento"
-                placeholder="Departamento"
-                required
-                className="form-control"
-              />
+              <input name="departamento" placeholder="Departamento" required className="form-control" />
             </div>
             <div className="p-1">
               <select name="tipo" className="form-select">
@@ -248,11 +211,10 @@ export default function Home() {
         </div>
       )}
 
-      {/* Sección de residente y resumen de paquetes */}
+      {/* Sección de residente - resumen de paquetes */}
       {mode === "residente_home" && (
         <div className="mt-4">
           <h2 className="text-xl font-bold mb-4">Resumen de Paquetes Pendientes</h2>
-          {message && <p className="mb-3">{message}</p>}
           {pendingPackages.length > 0 ? (
             <ul className="list-unstyled">
               {pendingPackages.map((pkg, i) => (
