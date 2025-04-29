@@ -1,46 +1,54 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import type { Package } from "../../../server/models/packageModel.ts";
-import Header from "../components/Header"; // importa tu Header (ajusta la ruta si es necesario)
+import type { Package } from "../../../server/models/packageModel.ts"; // asegúrate de importar el tipo
+import { useNavigate } from "react-router-dom"; // Importa el hook useNavigate
 
 export default function PackagesPage() {
   const [pendingPackages, setPendingPackages] = useState<Package[]>([]);
-  const navigate = useNavigate(); // para navegar cuando se haga click en Home del Header
+  const navigate = useNavigate(); // Inicializa el hook useNavigate
 
   useEffect(() => {
-    const savedPackages = localStorage.getItem("pendingPackages");
-    if (savedPackages) {
-      setPendingPackages(JSON.parse(savedPackages));
+    // Verificar si el userKey es 1, de lo contrario redirigir al usuario a la página principal
+    const userKey = localStorage.getItem("userKey");
+    if (userKey !== "1") {
+      navigate("/"); // Redirigir al usuario a la página principal
+    } else {
+      // Recuperar paquetes desde localStorage
+      const savedPackages = localStorage.getItem("pendingPackages");
+      if (savedPackages) {
+        setPendingPackages(JSON.parse(savedPackages));
+      }
     }
-  }, []);
+  }, [navigate]);
+
+  const handleLogout = () => {
+    // Establecer userKey a 0 en localStorage
+    localStorage.setItem("userKey", "0");
+    // Redirigir al usuario a la página principal
+    navigate("/"); // Usar navigate para redirigir
+  };
 
   return (
-    <>
-      <Header onHomeClick={() => navigate("/")} />
+    <div className="max-w-3xl mx-auto p-4">
+      <h2 className="text-2xl font-semibold mb-4">Paquetes Pendientes</h2>
+      {pendingPackages.length > 0 ? (
+        <ul>
+          {pendingPackages.map((pkg, i) => (
+            <li key={i}>
+              <strong>{pkg.tracking_id}</strong> - Tipo: {pkg.tipo}, Departamento: {pkg.departamento}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Vacío</p>
+      )}
 
-      <div className="container py-4 mt-4">
-        <h2 className="text-center mb-4 fw-bold">📦 Paquetes Pendientes</h2>
-
-        {pendingPackages.length > 0 ? (
-          <div className="row justify-content-center">
-            {pendingPackages.map((pkg, i) => (
-              <div key={i} className="col-12 col-md-6 col-lg-4 mb-4">
-                <div className="card shadow-sm h-100">
-                  <div className="card-body">
-                    <h5 className="card-title">{pkg.tracking_id}</h5>
-                    <p className="card-text">
-                      <strong>Tipo:</strong> {pkg.tipo}<br />
-                      <strong>Departamento:</strong> {pkg.departamento}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-center text-muted">No hay paquetes pendientes.</p>
-        )}
-      </div>
-    </>
+      {/* Botón de Cerrar Sesión */}
+      <button
+        onClick={handleLogout}
+        className="mt-4 p-2 bg-red-500 text-white rounded"
+      >
+        Cerrar sesión
+      </button>
+    </div>
   );
 }

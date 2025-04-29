@@ -1,3 +1,4 @@
+// client/src/pages/Home.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Package } from "../../../server/models/packageModel.ts";
@@ -34,6 +35,9 @@ export default function Home() {
     const result = await res.json();
 
     if (result.success) {
+      // Guardar el userKey con valor 1 en el localStorage
+      localStorage.setItem("userKey", "1"); // Guarda el valor "1" como la clave
+
       setPendingPackages(result.packages);
       localStorage.setItem("pendingPackages", JSON.stringify(result.packages));
       localStorage.setItem("departamento", result.departamento);
@@ -71,7 +75,6 @@ export default function Home() {
       <Header onHomeClick={() => setMode("inicio")} />
 
       <ToastContainer aria-label="Notification container" />
-
 
       {/* Sección de selección de modo de ingreso */}
       {mode === "inicio" && (
