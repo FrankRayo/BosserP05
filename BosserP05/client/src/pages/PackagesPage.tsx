@@ -1,24 +1,15 @@
 import React, { useEffect, useState } from "react";
+import type { Package } from "../../../server/models/packageModel.ts"; // asegúrate de importar el tipo
 
 export default function PackagesPage() {
-  const [pendingPackages, setPendingPackages] = useState([]);
+  const [pendingPackages, setPendingPackages] = useState<Package[]>([]);
 
   useEffect(() => {
-    // Simulando la obtención de paquetes pendientes del backend
-    const fetchPackages = async () => {
-      const res = await fetch("/api/verify_resident", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "test@test.com", password: "password" }), // Usa los datos correctos
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setPendingPackages(data.packages);
-      }
-    };
-
-    fetchPackages();
+    // Recuperar paquetes desde localStorage
+    const savedPackages = localStorage.getItem("pendingPackages");
+    if (savedPackages) {
+      setPendingPackages(JSON.parse(savedPackages));
+    }
   }, []);
 
   return (

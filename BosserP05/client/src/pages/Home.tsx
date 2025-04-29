@@ -31,15 +31,17 @@ export default function Home() {
     const result = await res.json();
   
     if (result.success) {
-      // Almacenar el token en el localStorage
-      localStorage.setItem("authToken", result.token); // Guarda el token en localStorage
+      // Almacenar los paquetes y el departamento en localStorage
+      setPendingPackages(result.packages);
+      localStorage.setItem("pendingPackages", JSON.stringify(result.packages));
+      localStorage.setItem("departamento", result.departamento); // opcional si quieres guardar también el departamento
   
-      setPendingPackages(result.packages); // Guardamos los paquetes pendientes
-      navigate("/paquetes"); // Redirigimos a la página de paquetes después de un login exitoso
+      navigate("/paquetes"); // Redirigir a la página de paquetes
     } else {
       setMessage("Credenciales incorrectas.");
     }
-  };  
+  };
+  
   // Función para signup (registro)
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
