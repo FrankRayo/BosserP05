@@ -57,7 +57,7 @@ export default function Home() {
       setMode("login_residente"); // Cambiar a login después de registro
       navigate("/"); // Redirigir al login después de un registro exitoso
     } else {
-      toast.error("Correo incorrecto o sin paquetes pendientes.", {
+      toast.error("Correo incorrecto.", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -70,7 +70,7 @@ export default function Home() {
       <Sidebar onHomeClick={() => setMode("inicio")} />
       
       {/* Toast container para mostrar los toasts */}
-      <ToastContainer />
+      <ToastContainer aria-label="Notification container" />
 
       {/* Sección de selección de modo de ingreso */}
       {mode === "inicio" && (
