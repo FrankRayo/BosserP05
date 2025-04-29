@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Package } from "../../../server/models/packageModel.ts";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/Header.tsx";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import Header from "../components/Header.tsx";
 
 export default function Home() {
   const [mode, setMode] = useState<"inicio" | "conserje" | "login_residente" | "residente_home" | "signup">("inicio");
@@ -67,13 +68,14 @@ export default function Home() {
 
   return (
     <div className="container py-4">
-      <Sidebar onHomeClick={() => setMode("inicio")} />
+      <Header onHomeClick={() => setMode("inicio")} />
 
       <ToastContainer aria-label="Notification container" />
 
+
       {/* Sección de selección de modo de ingreso */}
       {mode === "inicio" && (
-        <div className="text-center">
+        <div className="text-center mt-4">
           <h1 className="text-2xl font-bold mb-4">Selecciona Modo de Ingreso</h1>
           <div className="d-flex justify-content-center gap-4">
             <button type="button" onClick={() => setMode("conserje")} className="btn btn-primary">
