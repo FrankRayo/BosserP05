@@ -2,11 +2,7 @@
 import { RouterContext } from "../../deps.ts";
 import { MongoClient } from "../../deps.ts";
 import { Resident } from "../models/residentModel.ts"; 
-import { create } from "https://deno.land/x/djwt@v2.6/mod.ts"; // Importamos el generador de JWT
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.3.0/mod.ts";
-
-// Clave secreta para la firma del token (debe ser segura y guardarse en variables de entorno)
-const JWT_SECRET = Deno.env.get("JWT_SECRET") || "clave_super_secreta"; // Guarda esta clave en una variable de entorno
 
 // Conexión a MongoDB
 const client = new MongoClient();
@@ -35,15 +31,10 @@ export const handler = async (ctx: RouterContext<"/api/verify_resident">) => {
     return;
   }
 
-  // Generar el token JWT
-  const payload = { email: resident.email, departamento: resident.departamento };
-  const token = await create({ alg: "HS256", typ: "JWT" }, payload, JWT_SECRET);
-
-  // Devolver el token JWT al cliente
+  // Si las credenciales son correctas, devolvemos un mensaje de éxito
   ctx.response.status = 200;
   ctx.response.body = {
     success: true,
     message: "Login exitoso.",
-    token, // Incluimos el token en la respuesta
   };
 };
