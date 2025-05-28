@@ -3,6 +3,7 @@ import { RouterContext } from "https://deno.land/x/oak@v11.1.0/mod.ts"; // Si Ro
 
 import { Package } from "../models/packageModel.ts";
 import { enviarCorreo } from "../util/email.ts"; // Importamos la función de email
+import { obtenerPaquetesPrioritarios } from "../util/prioridadPaquetes.ts";
 
 // Conexión a MongoDB
 const client = new MongoClient();
@@ -107,5 +108,36 @@ export const marcarPaqueteRecibido = async (ctx: RouterContext<"/api/paquetes/:i
     console.error("Error en marcarPaqueteRecibido:", error);
     ctx.response.status = 500;
     ctx.response.body = { error: "Error actualizando el paquete" };
+  }
+};
+
+export const notificarPaquetesPrioritarios = async (ctx: RouterContext<"/api/paquetes/notificar-prioritarios">) => {
+  try {
+    // Busca todos los paquetes pendientes
+    const paquetesPendientes = await packages.find({ estado: "Pendiente" }).toArray();
+
+    // Filtra los prioritarios
+    const prioritarios = obtenerPaquetesPrioritarios(paquetesPendientes);
+
+    let notificados = 0;
+    for (const pkg of prioritarios) {
+      try {
+        await enviarCorreo(pkg.destinatario);
+        await packages.updateOne({ _id: pkg._id }, { $set: { notificado: true } });
+        notificados++;
+      } catch (err) {
+        console.error(`Error notificando a ${pkg.destinatario}:`, err);
+      }
+    }
+
+    ctx.response.status = 200;
+    ctx.response.body = {
+      message: `Se notificaron ${notificados} paquetes prioritarios.`,
+      paquetes: prioritarios.map(p => p.tracking_id),
+    };
+  } catch (err) {
+    console.error("Error en notificarPaquetesPrioritarios:", err);
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Error notificando paquetes prioritarios" };
   }
 };
