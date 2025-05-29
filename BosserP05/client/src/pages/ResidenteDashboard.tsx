@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
 import SidebarResidente from "../components/SidebarResidente.tsx";
 import NavbarResidente from "../components/NavbarResidente.tsx";
 import { useIsMobile } from "../hooks/useIsMobile.ts";
@@ -143,26 +144,28 @@ export default function ResidenteDashboard() {
             {!historialLoading && !historialError && (
               historial.length > 0 ? (
                 <>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Tracking ID</th>
-                        <th>Tipo</th>
-                        <th>Estado</th>
-                        <th>Fecha de Recepción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {historial.map((pkg) => (
-                        <tr key={pkg._id}>
-                          <td>{pkg.tracking_id}</td>
-                          <td>{pkg.tipo}</td>
-                          <td>{pkg.estado}</td>
-                          <td>{new Date(pkg.fecha_recepcion).toLocaleString()}</td>
+                  <div className="table-responsive">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Tracking ID</th>
+                          <th>Tipo</th>
+                          <th>Estado</th>
+                          <th>Fecha de Recepción</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {historial.map((pkg) => (
+                          <tr key={pkg._id}>
+                            <td>{pkg.tracking_id}</td>
+                            <td>{pkg.tipo}</td>
+                            <td>{pkg.estado}</td>
+                            <td>{new Date(pkg.fecha_recepcion).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                   <div className="d-flex justify-content-between align-items-center">
                     <button
                       className="btn btn-secondary"
