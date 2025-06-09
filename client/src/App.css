@@ -249,3 +249,11 @@ body {
   background: #f0f0f0;
   color: #DD3D33;
 }
+
+.btn-recibido {
+  margin-left: 1rem;  /* Ajusta el valor según lo que necesites */
+}
+.btn-recibido:hover {
+  background-color: #b72c25; /* Cambia el color de fondo al pasar el mouse */
+  color: #290c0c; /* Cambia el color del texto al pasar el mouse */
+}

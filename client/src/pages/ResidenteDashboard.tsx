@@ -84,7 +84,12 @@ export default function ResidenteDashboard() {
                     <li key={pkg._id}>
                       <strong>{pkg.tracking_id}</strong> - Departamento: {pkg.departamento}, Tipo: {pkg.tipo}
                       {pkg.estado === "Pendiente" && (
-                        <button onClick={() => marcarRecibido(pkg._id)}>Indicar recibido</button>
+                        <button 
+                          onClick={() => marcarRecibido(pkg._id)} 
+                          style={{ marginLeft: '1rem' }}  // Margen agregado aquí
+                        >
+                          Indicar recibido
+                        </button>
                       )}
                     </li>
                   ))}
@@ -103,4 +108,3 @@ export default function ResidenteDashboard() {
     </div>
   );
 }
-  
