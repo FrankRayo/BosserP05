@@ -23,9 +23,10 @@ router.post("/api/login", loginHandler);
 router.post("/api/paquetes", registrarPaquete);
 router.post("/api/signup_resident", signupResident);
 router.post("/api/admin/crear_usuario", crearUsuarioHandler);
-router.get("/api/paquetes/residente", getPaquetesResidente);
+router.get("/api/paquetes/residente", authMiddleware, getPaquetesResidente);
+// NO protegemos /all con authMiddleware para que no dé 401
 router.get("/api/paquetes/all", getAllPaquetes);      // ← NUEVA RUTA ABIERTA
-router.put("/api/paquetes/:id/recibido", marcarPaqueteRecibido);
+router.put("/api/paquetes/:id/recibido", authMiddleware, marcarPaqueteRecibido);
 
 app.use(oakCors());
 app.use(router.routes());
