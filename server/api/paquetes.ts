@@ -56,21 +56,31 @@ export const getPaquetesResidente = async (ctx: RouterContext<"/api/paquetes/res
   try {
     const user = ctx.state.user;
     let departamento = user?.departamento;
-
     if (!departamento) {
       ctx.response.status = 400;
       ctx.response.body = { message: "Departamento requerido" };
       return;
     }
 
-    // Normaliza el departamento
     departamento = departamento.trim().toLowerCase();
 
-    // Busca paquetes pendientes solo para el departamento
-    const paquetes = await packages.find({
-      departamento,
-      estado: "Pendiente",
-    }).limit(50).toArray();
+    // Leemos el parámetro all
+    const all = ctx.request.url.searchParams.get("all") === "true";
+
+    // Construimos la consulta: siempre filtramos por departamento
+    // y solo añadimos estado=Pendiente cuando no venga all=true
+    const query: Record<string, unknown> = { departamento };
+    if (!all) {
+      query.estado = "Pendiente";
+    }
+
+    // Ejecutamos la consulta y limitamos solo si no es all
+    const cursor = packages.find(query);
+    if (!all) {
+      cursor.limit(50);
+    }
+
+    const paquetes = await cursor.toArray();
 
     ctx.response.status = 200;
     ctx.response.body = paquetes;
@@ -107,5 +117,17 @@ export const marcarPaqueteRecibido = async (ctx: RouterContext<"/api/paquetes/:i
     console.error("Error en marcarPaqueteRecibido:", error);
     ctx.response.status = 500;
     ctx.response.body = { error: "Error actualizando el paquete" };
+  }
+};
+
+export const getAllPaquetes = async (ctx: RouterContext<"/api/paquetes/all">) => {
+  try {
+    const paquetes = await packages.find({}).toArray();
+    ctx.response.status = 200;
+    ctx.response.body = paquetes;
+  } catch (err) {
+    console.error("Error en getAllPaquetes:", err);
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Error al buscar todos los paquetes" };
   }
 };

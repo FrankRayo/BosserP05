@@ -1,3 +1,4 @@
+// client/src/pages/ResidenteDashboard.tsx
 import React, { useState, useEffect } from "react";
 import SidebarResidente from "../components/SidebarResidente.tsx";
 import NavbarResidente from "../components/NavbarResidente.tsx";
@@ -13,8 +14,6 @@ export default function ResidenteDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (section !== "pendientes") return;
-
     const token = localStorage.getItem("token");
     if (!token) {
       setError("No hay sesión activa. Por favor, inicia sesión.");
@@ -25,14 +24,17 @@ export default function ResidenteDashboard() {
     setLoading(true);
     setError(null);
 
-    fetch("/api/paquetes/residente", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const url =
+      section === "pendientes"
+        ? "/api/paquetes/residente"
+        : "/api/paquetes/residente?all=true";
+
+    fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => {
         if (!res.ok) throw new Error("No se pudieron obtener los paquetes.");
-        return res.json();
+        return res.json() as Promise<Package[]>;
       })
       .then((data) => setPaquetes(data))
       .catch((err) => {
@@ -51,17 +53,20 @@ export default function ResidenteDashboard() {
     try {
       const res = await fetch(`/api/paquetes/${id}/recibido`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Error al actualizar paquete");
+      if (!res.ok) throw new Error("Error actualizando paquete");
       alert("Paquete marcado como recibido");
       setPaquetes((prev) => prev.filter((p) => p._id !== id));
-    } catch (error) {
-      alert("No se pudo marcar el paquete como recibido");
+    } catch {
+      alert("No se pudo marcar como recibido");
     }
   }
+
+  // Sólo los pendientes para la sección Pendientes
+  const pendientes = paquetes.filter((p) => p.estado === "Pendiente");
+  // Para Historial, todos los paquetes
+  const paquetesHistorial = paquetes; 
 
   return (
     <div className="dashboard-wrapper conserje-dashboard-content">
@@ -72,25 +77,23 @@ export default function ResidenteDashboard() {
       )}
 
       <div className="container py-4" style={{ flex: 1 }}>
-        {section === "pendientes" && (
+        {section === "pendientes" ? (
           <>
             <h2 className="mb-4">Paquetes Pendientes</h2>
             {loading && <p>Cargando paquetes...</p>}
             {error && <p className="text-danger">{error}</p>}
             {!loading && !error && (
-              paquetes.length > 0 ? (
+              pendientes.length > 0 ? (
                 <ul>
-                  {paquetes.map((pkg) => (
+                  {pendientes.map((pkg) => (
                     <li key={pkg._id}>
-                      <strong>{pkg.tracking_id}</strong> - Departamento: {pkg.departamento}, Tipo: {pkg.tipo}
-                      {pkg.estado === "Pendiente" && (
-                        <button 
-                          onClick={() => marcarRecibido(pkg._id)} 
-                          style={{ marginLeft: '1rem' }}  // Margen agregado aquí
-                        >
-                          Indicar recibido
-                        </button>
-                      )}
+                      <strong>{pkg.tracking_id}</strong> – Departamento: {pkg.departamento}, Tipo: {pkg.tipo}
+                      <button
+                        onClick={() => marcarRecibido(pkg._id)}
+                        style={{ marginLeft: "1rem" }}
+                      >
+                        Indicar recibido
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -99,10 +102,25 @@ export default function ResidenteDashboard() {
               )
             )}
           </>
-        )}
-
-        {section === "historial" && (
-          <p className="text-muted">La sección de historial estará disponible próximamente.</p>
+        ) : (
+          <>
+            <h2 className="mb-4">Historial de Paquetes</h2>
+            {loading && <p>Cargando historial...</p>}
+            {error && <p className="text-danger">{error}</p>}
+            {!loading && !error && (
+              paquetesHistorial.length > 0 ? (
+                <ul>
+                  {paquetesHistorial.map((pkg) => (
+                    <li key={pkg._id}>
+                      <strong>{pkg.tracking_id}</strong> – Departamento: {pkg.departamento}, Tipo: {pkg.tipo}, Estado: {pkg.estado}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No tienes historial de paquetes.</p>
+              )
+            )}
+          </>
         )}
       </div>
     </div>

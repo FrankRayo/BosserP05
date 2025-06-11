@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+// client/src/pages/ConserjeDashboard.tsx
+import React, { useState, useEffect } from "react";
 import SidebarConserje from "../components/SidebarConserje.tsx";
 import NavbarConserje from "../components/NavbarConserje.tsx";
 import { useIsMobile } from "../hooks/useIsMobile.ts";
+import type { Package } from "../../../server/models/packageModel.ts";
 
 export default function ConserjeDashboard() {
   const [section, setSection] = useState<"registro" | "historial">("registro");
@@ -14,11 +16,18 @@ export default function ConserjeDashboard() {
     tipo: "Normal",
   });
 
+  // Estado para los paquetes en historial
+  const [paquetes, setPaquetes] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Manejador de inputs
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  // Registro de un nuevo paquete
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -29,19 +38,42 @@ export default function ConserjeDashboard() {
     });
 
     const result = await res.json();
-
     if (res.ok) {
       alert(result.message);
-      setForm({
-        tracking_id: "",
-        destinatario: "",
-        departamento: "",
-        tipo: "Normal",
-      });
+      setForm({ tracking_id: "", destinatario: "", departamento: "", tipo: "Normal" });
     } else {
       alert("❌ Error: " + (result.message || "Registro fallido"));
     }
   };
+
+  // useEffect para cargar el historial cuando cambia la sección
+  useEffect(() => {
+    if (section !== "historial") return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("No hay sesión activa. Por favor, inicia sesión.");
+      setPaquetes([]);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    fetch("/api/paquetes/all", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("No se pudieron obtener los paquetes.");
+        return res.json() as Promise<Package[]>;
+      })
+      .then((data) => setPaquetes(data))
+      .catch((err) => {
+        setError(err.message || "Error al obtener paquetes.");
+        setPaquetes([]);
+      })
+      .finally(() => setLoading(false));
+  }, [section]);
 
   return (
     <div className="dashboard-wrapper conserje-dashboard-content">
@@ -112,10 +144,27 @@ export default function ConserjeDashboard() {
         {section === "historial" && (
           <>
             <h2 className="mb-4">Historial de Paquetes</h2>
-            <p className="text-muted">Esta sección se implementará próximamente.</p>
+
+            {loading && <p>Cargando historial...</p>}
+            {error   && <p className="text-danger">{error}</p>}
+
+            {!loading && !error && (
+              paquetes.length > 0 ? (
+                <ul>
+                  {paquetes.map((pkg) => (
+                    <li key={pkg._id}>
+                     <strong>{pkg.tracking_id}</strong> – Departamento: {pkg.departamento}, Tipo: {pkg.tipo}, Estado: {pkg.estado}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No hay paquetes registrados.</p>
+              )
+            )}
           </>
         )}
       </div>
     </div>
   );
 }
+  
