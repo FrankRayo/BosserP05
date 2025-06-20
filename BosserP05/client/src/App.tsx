@@ -7,6 +7,8 @@ import AdminDashboard from "./pages/AdminDashboard.tsx";
 import ConserjeDashboard from "./pages/ConserjeDashboard.tsx";
 import ResidenteDashboard from "./pages/ResidenteDashboard.tsx";
 import { ProtectedRoute } from "./routes/ProtectedRoute.tsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
@@ -51,6 +53,9 @@ export default function App() {
           {/* 404 - Página no encontrada */}
           <Route path="*" element={<div>Página no encontrada</div>} />
         </Routes>
+
+        {/* 🔔 Toasts globales */}
+        <ToastContainer position="bottom-right" autoClose={3000} />
       </div>
     </BrowserRouter>
   );

@@ -19,6 +19,13 @@ export default function ResidenteDashboard() {
   const [historialPage, setHistorialPage] = useState(1);
   const [historialPages, setHistorialPages] = useState(1);
 
+  // ✅ NUEVO: función para calcular días transcurridos
+  const diasTranscurridos = (fechaRec: string) => {
+    const fecha = new Date(fechaRec);
+    const diffMs = Date.now() - fecha.getTime();
+    return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  };
+
   useEffect(() => {
     if (section !== "pendientes") return;
 
@@ -118,16 +125,28 @@ export default function ResidenteDashboard() {
             {loading && <p>Cargando paquetes...</p>}
             {error && <p className="text-danger">{error}</p>}
             {!loading && !error && (
-              paquetes.length > 0 ? (
-                <ul>
-                  {paquetes.map((pkg) => (
-                    <li key={pkg._id}>
-                      <strong>{pkg.tracking_id}</strong> - Departamento: {pkg.departamento}, Tipo: {pkg.tipo}
-                      {pkg.estado === "Pendiente" && (
-                        <button onClick={() => marcarRecibido(pkg._id)}>Indicar recibido</button>
-                      )}
-                    </li>
-                  ))}
+              paquetes.filter(p => p.estado === "Pendiente").length > 0 ? (
+                <ul className="list-group">
+                  {paquetes
+                    .filter((pkg) => pkg.estado === "Pendiente")
+                    .map((pkg) => {
+                      const dias = diasTranscurridos(pkg.fecha_recepcion);
+                      return (
+                        <li key={pkg._id} className="list-group-item d-flex justify-content-between align-items-center">
+                          <div>
+                            <strong>{pkg.tracking_id}</strong> – Departamento: {pkg.departamento}, Tipo: {pkg.tipo}
+                            <br />
+                            <small className="text-muted">{dias} {dias === 1 ? "día" : "días"} desde recepción</small>
+                          </div>
+                          <button
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => marcarRecibido(pkg._id)}
+                          >
+                            Indicar recibido
+                          </button>
+                        </li>
+                      );
+                    })}
                 </ul>
               ) : (
                 <p>No tienes paquetes pendientes.</p>
@@ -152,17 +171,22 @@ export default function ResidenteDashboard() {
                           <th>Tipo</th>
                           <th>Estado</th>
                           <th>Fecha de Recepción</th>
+                          <th>Días desde recepción</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {historial.map((pkg) => (
-                          <tr key={pkg._id}>
-                            <td>{pkg.tracking_id}</td>
-                            <td>{pkg.tipo}</td>
-                            <td>{pkg.estado}</td>
-                            <td>{new Date(pkg.fecha_recepcion).toLocaleString()}</td>
-                          </tr>
-                        ))}
+                        {historial.map((pkg) => {
+                          const dias = diasTranscurridos(pkg.fecha_recepcion);
+                          return (
+                            <tr key={pkg._id}>
+                              <td>{pkg.tracking_id}</td>
+                              <td>{pkg.tipo}</td>
+                              <td>{pkg.estado}</td>
+                              <td>{new Date(pkg.fecha_recepcion).toLocaleString()}</td>
+                              <td>{dias} {dias === 1 ? "día" : "días"}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
