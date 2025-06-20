@@ -1,8 +1,9 @@
-import { MongoClient, ObjectId, RouterContext } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-import { RouterContext } from "https://deno.land/x/oak@v11.1.0/mod.ts"; // Si RouterContext no viene de mongo
+// server/api/paquetes.ts
+import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
+import { RouterContext } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 
 import { Package } from "../models/packageModel.ts";
-import { enviarCorreo } from "../util/email.ts"; // Importamos la función de email
+import { enviarCorreo } from "../util/email.ts"; // Importamos la función de email con nueva firma
 import { obtenerPaquetesPrioritarios } from "../util/prioridadPaquetes.ts";
 
 // Conexión a MongoDB
@@ -36,7 +37,14 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
     const result = await packages.insertOne(newPackage);
 
     try {
-      await enviarCorreo(destinatario);
+      // Enviar correo inmediato con datos completos
+      await enviarCorreo(
+        destinatario,
+        departamento,
+        tipo,
+        newPackage.fecha_recepcion,
+        tracking_id
+      );
       await packages.updateOne({ _id: result }, { $set: { notificado: true } });
     } catch (error) {
       console.error("Error enviando el correo:", error);
@@ -53,7 +61,9 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
   }
 };
 
-export const getPaquetesResidente = async (ctx: RouterContext<"/api/paquetes/residente">) => {
+export const getPaquetesResidente = async (
+  ctx: RouterContext<"/api/paquetes/residente">
+) => {
   try {
     const user = ctx.state.user;
     let departamento = user?.departamento;
@@ -82,7 +92,9 @@ export const getPaquetesResidente = async (ctx: RouterContext<"/api/paquetes/res
   }
 };
 
-export const marcarPaqueteRecibido = async (ctx: RouterContext<"/api/paquetes/:id/recibido">) => {
+export const marcarPaqueteRecibido = async (
+  ctx: RouterContext<"/api/paquetes/:id/recibido">
+) => {
   try {
     const id = ctx.params.id;
     if (!id) {
@@ -111,7 +123,9 @@ export const marcarPaqueteRecibido = async (ctx: RouterContext<"/api/paquetes/:i
   }
 };
 
-export const notificarPaquetesPrioritarios = async (ctx: RouterContext<"/api/paquetes/notificar-prioritarios">) => {
+export const notificarPaquetesPrioritarios = async (
+  ctx: RouterContext<"/api/paquetes/notificar-prioritarios">
+) => {
   try {
     // Busca todos los paquetes pendientes
     const paquetesPendientes = await packages.find({ estado: "Pendiente" }).toArray();
@@ -122,7 +136,19 @@ export const notificarPaquetesPrioritarios = async (ctx: RouterContext<"/api/paq
     let notificados = 0;
     for (const pkg of prioritarios) {
       try {
-        await enviarCorreo(pkg.destinatario);
+        // Convertir fecha de recepción a Date si es necesario
+        const fechaRecepcion = pkg.fecha_recepcion instanceof Date
+          ? pkg.fecha_recepcion
+          : new Date(pkg.fecha_recepcion);
+
+        // Enviar correo con datos completos
+        await enviarCorreo(
+          pkg.destinatario,
+          pkg.departamento,
+          pkg.tipo,
+          fechaRecepcion,
+          pkg.tracking_id
+        );
         await packages.updateOne({ _id: pkg._id }, { $set: { notificado: true } });
         notificados++;
       } catch (err) {
@@ -142,7 +168,9 @@ export const notificarPaquetesPrioritarios = async (ctx: RouterContext<"/api/paq
   }
 };
 
-export const getHistorialResidente = async (ctx: RouterContext<"/api/paquetes/historial">) => {
+export const getHistorialResidente = async (
+  ctx: RouterContext<"/api/paquetes/historial">
+) => {
   try {
     const user = ctx.state.user;
     let departamento = user?.departamento;
