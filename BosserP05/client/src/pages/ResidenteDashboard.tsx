@@ -19,7 +19,6 @@ export default function ResidenteDashboard() {
   const [historialPage, setHistorialPage] = useState(1);
   const [historialPages, setHistorialPages] = useState(1);
 
-  // ✅ NUEVO: función para calcular días transcurridos
   const diasTranscurridos = (fechaRec: string) => {
     const fecha = new Date(fechaRec);
     const diffMs = Date.now() - fecha.getTime();
@@ -137,6 +136,10 @@ export default function ResidenteDashboard() {
                             <strong>{pkg.tracking_id}</strong> – Departamento: {pkg.departamento}, Tipo: {pkg.tipo}
                             <br />
                             <small className="text-muted">{dias} {dias === 1 ? "día" : "días"} desde recepción</small>
+                            <br />
+                            <small className="text-primary">
+                              Código de entrega: <strong>{pkg.codigo_entrega}</strong>
+                            </small>
                           </div>
                           <button
                             className="btn btn-outline-primary btn-sm"

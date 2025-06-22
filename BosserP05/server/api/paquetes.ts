@@ -1,28 +1,34 @@
-// server/api/paquetes.ts
 import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { RouterContext } from "https://deno.land/x/oak@v11.1.0/mod.ts";
 
 import { Package } from "../models/packageModel.ts";
-import { enviarCorreo } from "../util/email.ts"; // Importamos la función de email con nueva firma
+import { enviarCorreo } from "../util/email.ts";
 import { obtenerPaquetesPrioritarios } from "../util/prioridadPaquetes.ts";
 
-// Conexión a MongoDB
 const client = new MongoClient();
 await client.connect("mongodb://127.0.0.1:27017");
 const db = client.database("gestion_paquetes");
 const packages = db.collection<Package>("packages");
 
-// Ruta para registrar un paquete (sin verificación de token)
+// Ruta para registrar un paquete
 export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
   try {
-    const { tracking_id, destinatario, departamento, tipo } =
-      await ctx.request.body({ type: "json" }).value;
+    const { destinatario, departamento, tipo } = await ctx.request.body({ type: "json" }).value;
 
-    if (!tracking_id || !destinatario || !departamento || !tipo) {
+    if (!destinatario || !departamento || !tipo) {
       ctx.response.status = 400;
       ctx.response.body = { message: "❌ Todos los campos son obligatorios." };
       return;
     }
+
+    // Generar tracking_id incremental (opcionalmente puedes usar un contador global)
+    const lastPackage = await packages.find().sort({ fecha_recepcion: -1 }).limit(1).toArray();
+    const tracking_id = lastPackage.length > 0
+      ? (parseInt(lastPackage[0].tracking_id) + 1).toString().padStart(6, "0")
+      : "000001";
+
+    // Generar código de entrega aleatorio de 5 dígitos
+    const codigo_entrega = Math.floor(10000 + Math.random() * 90000).toString();
 
     const newPackage: Package = {
       tracking_id,
@@ -32,12 +38,12 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
       estado: "Pendiente",
       fecha_recepcion: new Date(),
       notificado: false,
+      codigo_entrega,
     };
 
     const result = await packages.insertOne(newPackage);
 
     try {
-      // Enviar correo inmediato con datos completos
       await enviarCorreo(
         destinatario,
         departamento,
@@ -52,7 +58,9 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
 
     ctx.response.status = 200;
     ctx.response.body = {
-      message: `✅ Paquete recibido con ID: ${result}`,
+      message: `✅ Paquete recibido con ID: ${tracking_id}`,
+      tracking_id,
+      codigo_entrega,
     };
   } catch (err) {
     console.error("Error en handler /api/paquetes:", err);
@@ -61,6 +69,39 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
   }
 };
 
+// Validar código de entrega y marcar como recibido
+export const validarCodigoEntrega = async (
+  ctx: RouterContext<"/api/paquetes/validar-codigo">
+) => {
+  try {
+    const { tracking_id, codigo_entrega } = await ctx.request.body({ type: "json" }).value;
+
+    const paquete = await packages.findOne({ tracking_id });
+    if (!paquete) {
+      ctx.response.status = 404;
+      ctx.response.body = { message: "Paquete no encontrado" };
+      return;
+    }
+
+    if (paquete.codigo_entrega === codigo_entrega) {
+      await packages.updateOne(
+        { tracking_id },
+        { $set: { estado: "Entregado" } }
+      );
+      ctx.response.status = 200;
+      ctx.response.body = { message: "Código válido. Paquete entregado." };
+    } else {
+      ctx.response.status = 400;
+      ctx.response.body = { message: "Código incorrecto" };
+    }
+  } catch (err) {
+    console.error("Error en validarCodigoEntrega:", err);
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Error al validar el código" };
+  }
+};
+
+// Obtener paquetes pendientes de un residente
 export const getPaquetesResidente = async (
   ctx: RouterContext<"/api/paquetes/residente">
 ) => {
@@ -74,10 +115,8 @@ export const getPaquetesResidente = async (
       return;
     }
 
-    // Normaliza el departamento
     departamento = departamento.trim().toLowerCase();
 
-    // Busca paquetes pendientes solo para el departamento
     const paquetes = await packages.find({
       departamento,
       estado: "Pendiente",
@@ -127,21 +166,17 @@ export const notificarPaquetesPrioritarios = async (
   ctx: RouterContext<"/api/paquetes/notificar-prioritarios">
 ) => {
   try {
-    // Busca todos los paquetes pendientes
     const paquetesPendientes = await packages.find({ estado: "Pendiente" }).toArray();
 
-    // Filtra los prioritarios
     const prioritarios = obtenerPaquetesPrioritarios(paquetesPendientes);
 
     let notificados = 0;
     for (const pkg of prioritarios) {
       try {
-        // Convertir fecha de recepción a Date si es necesario
         const fechaRecepcion = pkg.fecha_recepcion instanceof Date
           ? pkg.fecha_recepcion
           : new Date(pkg.fecha_recepcion);
 
-        // Enviar correo con datos completos
         await enviarCorreo(
           pkg.destinatario,
           pkg.departamento,
@@ -221,4 +256,3 @@ export const getTodosLosPaquetes = async (
     ctx.response.body = { error: "Error al obtener todos los paquetes" };
   }
 };
-

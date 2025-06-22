@@ -9,4 +9,5 @@ export interface Package {
   estado: "Pendiente" | "Entregado";
   fecha_recepcion: Date;
   notificado: boolean;  // Si ya se notificó al destinatario
+  codigo_entrega: string; // Código secreto de 5 dígitos para validación
 }
