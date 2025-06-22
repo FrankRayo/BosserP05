@@ -1,36 +1,36 @@
-import React, { useState, useEffect } from "react";
-import SidebarConserje from "../components/SidebarConserje.tsx";
-import NavbarConserje from "../components/NavbarConserje.tsx";
-import { useIsMobile } from "../hooks/useIsMobile.ts";
-import type { Package } from "../../../server/models/packageModel.ts";
-import { toast } from "react-toastify";
+import React, { useState, useEffect } from "react"; // Importa React y hooks
+import SidebarConserje from "../components/SidebarConserje.tsx"; // Componente de barra lateral
+import NavbarConserje from "../components/NavbarConserje.tsx"; // Componente de barra superior
+import { useIsMobile } from "../hooks/useIsMobile.ts"; // Hook personalizado para detectar pantalla móvil
+import type { Package } from "../../../server/models/packageModel.ts"; // Tipo de dato para los paquetes
+import { toast } from "react-toastify"; // Librería para notificaciones
 
 export default function ConserjeDashboard() {
-  const [section, setSection] = useState<"registro" | "historial">("registro");
-  const isMobile = useIsMobile(769);
+  const [section, setSection] = useState<"registro" | "historial">("registro"); // Sección activa
+  const isMobile = useIsMobile(769); // Detecta si es dispositivo móvil
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState({ // Estado del formulario
     tracking_id: "",
     destinatario: "",
     departamento: "",
     tipo: "Normal",
   });
 
-  const [paquetes, setPaquetes] = useState<Package[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [paquetes, setPaquetes] = useState<Package[]>([]); // Lista de paquetes
+  const [loading, setLoading] = useState(false); // Indicador de carga
+  const [error, setError] = useState<string | null>(null); // Mensaje de error
 
-  const [filtroDepartamento, setFiltroDepartamento] = useState("");
-  const [filtroFecha, setFiltroFecha] = useState("");
+  const [filtroDepartamento, setFiltroDepartamento] = useState(""); // Filtro por departamento
+  const [filtroFecha, setFiltroFecha] = useState(""); // Filtro por fecha
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { // Manejador para cambios en inputs
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => { // Manejador de envío de formulario
     e.preventDefault();
-    const toastId = toast.loading("Registrando paquete...");
+    const toastId = toast.loading("Registrando paquete..."); // Notificación de carga
 
     const res = await fetch("/api/paquetes", {
       method: "POST",
@@ -57,13 +57,13 @@ export default function ConserjeDashboard() {
     }
   };
 
-  useEffect(() => {
+  useEffect(() => { // Efecto para cargar historial
     if (section !== "historial") return;
 
     const controller = new AbortController();
     const signal = controller.signal;
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token"); // Obtiene token
     if (!token) {
       setError("No hay sesión activa. Por favor, inicia sesión.");
       setPaquetes([]);
@@ -108,35 +108,35 @@ export default function ConserjeDashboard() {
       .finally(() => setLoading(false));
 
     return () => {
-      controller.abort();
+      controller.abort(); // Cancela fetch si se desmonta
     };
   }, [section]);
 
-  const diasTranscurridos = (fechaRec: string) => {
+  const diasTranscurridos = (fechaRec: string) => { // Calcula días desde recepción
     const fecha = new Date(fechaRec);
     const diffMs = Date.now() - fecha.getTime();
     return Math.floor(diffMs / (1000 * 60 * 60 * 24));
   };
 
-  const paquetesFiltrados = paquetes.filter((pkg) => {
+  const paquetesFiltrados = paquetes.filter((pkg) => { // Filtra por departamento y fecha
     const coincideDepartamento = filtroDepartamento === "" || pkg.departamento.toLowerCase().includes(filtroDepartamento.toLowerCase());
     const coincideFecha = filtroFecha === "" || pkg.fecha_recepcion.startsWith(filtroFecha);
     return coincideDepartamento && coincideFecha;
   });
 
   return (
-    <div className="dashboard-wrapper conserje-dashboard-content">
+    <div className="dashboard-wrapper conserje-dashboard-content"> {/* Contenedor principal */}
       {isMobile ? (
-        <NavbarConserje active={section} onSelect={setSection} />
+        <NavbarConserje active={section} onSelect={setSection} /> // Navbar para móviles
       ) : (
-        <SidebarConserje active={section} onSelect={setSection} />
+        <SidebarConserje active={section} onSelect={setSection} /> // Sidebar para escritorio
       )}
 
-      <div className="container py-4" style={{ flex: 1 }}>
+      <div className="container py-4" style={{ flex: 1 }}> {/* Contenido principal */}
         {section === "registro" && (
           <>
             <h2 className="mb-4">Registro de Paquetes</h2>
-            <form onSubmit={handleSubmit} className="formulario-paquete">
+            <form onSubmit={handleSubmit} className="formulario-paquete"> {/* Formulario de registro */}
               <div className="mb-3">
                 <label htmlFor="tracking_id" className="form-label">Tracking ID</label>
                 <input type="text" id="tracking_id" name="tracking_id" className="form-control" value={form.tracking_id} onChange={handleChange} required />
@@ -170,7 +170,7 @@ export default function ConserjeDashboard() {
         {section === "historial" && (
           <>
             <h2 className="mb-4">Historial de Paquetes</h2>
-            <div className="row mb-3">
+            <div className="row mb-3"> {/* Filtros */}
               <div className="col-md-6">
                 <input type="text" className="form-control" placeholder="Buscar por departamento" value={filtroDepartamento} onChange={(e) => setFiltroDepartamento(e.target.value)} />
               </div>
@@ -182,7 +182,7 @@ export default function ConserjeDashboard() {
             {loading && <p>Cargando historial...</p>}
             {error && <p className="text-danger">{error}</p>}
             {!loading && !error && paquetesFiltrados.length > 0 ? (
-              <div className="table-responsive">
+              <div className="table-responsive"> {/* Tabla de paquetes */}
                 <table className="table">
                   <thead>
                     <tr>
@@ -198,7 +198,7 @@ export default function ConserjeDashboard() {
                     {paquetesFiltrados.map((pkg) => {
                       const dias = diasTranscurridos(pkg.fecha_recepcion);
                       return (
-                        <tr key={pkg._id}>
+                        <tr key={pkg._id}> {/* Fila */}
                           <td>{pkg.tracking_id}</td>
                           <td>{pkg.tipo}</td>
                           <td>{pkg.departamento}</td>
