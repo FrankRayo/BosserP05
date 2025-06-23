@@ -1,5 +1,5 @@
 import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-import { RouterContext } from "https://deno.land/x/oak@v11.1.0/mod.ts";
+import { RouterContext } from "../../deps.ts";
 
 import { Package } from "../models/packageModel.ts";
 import { enviarCorreo } from "../util/email.ts";
@@ -51,7 +51,15 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
         newPackage.fecha_recepcion,
         tracking_id
       );
-      await packages.updateOne({ _id: result }, { $set: { notificado: true } });
+      await packages.updateOne(
+        { _id: result },
+        {
+          $set: {
+            notificado: true,
+            ultima_notificacion: new Date() // ✅ CLAVE para que funcione la lógica de reenvío
+          }
+        }
+      );
     } catch (error) {
       console.error("Error enviando el correo:", error);
     }
@@ -182,7 +190,8 @@ export const notificarPaquetesPrioritarios = async (
           pkg.departamento,
           pkg.tipo,
           fechaRecepcion,
-          pkg.tracking_id
+          pkg.tracking_id,
+          true
         );
         await packages.updateOne({ _id: pkg._id }, { $set: { notificado: true } });
         notificados++;

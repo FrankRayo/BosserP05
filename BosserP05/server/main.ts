@@ -1,5 +1,6 @@
-import { Application, Router, oakCors } from "../deps.ts";
+import { Application, Router, oakCors } from "../../deps.ts";
 import routeStaticFilesFrom from "./util/routeStaticFilesFrom.ts";
+import { notificarPrioritarios } from "./util/notificarPrioritarios.ts";
 
 // Controladores
 import { handler as verifyResident } from "./api/verify_resident.ts"; // Verifica existencia de residente
@@ -38,6 +39,11 @@ app.use(
     `${Deno.cwd()}/client/public`,   // Recursos públicos (favicon, imágenes, etc.)
   ])
 );
+
+// Ejecutar cada 5 minutos 
+setInterval(() => {
+  notificarPrioritarios();
+}, 5 * 60 * 1000);
 
 console.log("Servidor en http://localhost:8000");
 await app.listen({ port: 8000 });

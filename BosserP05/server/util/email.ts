@@ -1,11 +1,15 @@
 import { SMTPClient } from "https://deno.land/x/denomailer/mod.ts";
 
+/**
+ * Envía un correo de notificación o recordatorio.
+ */
 export async function enviarCorreo(
   destinatarioEmail: string,
   departamento: string,
   tipoPaquete: string,
   fechaRecepcion: Date,
-  trackingId: string
+  trackingId: string,
+  esRecordatorio = false // ✅ nuevo parámetro opcional
 ) {
   const fechaStr = fechaRecepcion.toLocaleString("en-US", {
     year: "numeric",
@@ -16,6 +20,16 @@ export async function enviarCorreo(
     hour12: true,
   });
 
+  const asunto = esRecordatorio
+    ? `🔔 Recordatorio: Paquete aún pendiente en dpto ${departamento}`
+    : `📦 Paquete para dpto ${departamento}`;
+
+  const contenido = esRecordatorio
+    ? `Hola,\n\nTe recordamos que aún tienes un paquete de tipo "${tipoPaquete}" recibido el ${fechaStr}.\n\n` +
+      `Tracking ID: ${trackingId}\n\nPor favor, acércate a retirarlo lo antes posible.`
+    : `Hola,\n\nTu paquete de tipo "${tipoPaquete}" llegó el ${fechaStr}.\n\n` +
+      `Tracking ID: ${trackingId}\n\n¡Gracias!`;
+
   const client = new SMTPClient({
     connection: {
       hostname: "smtp.gmail.com",
@@ -23,7 +37,7 @@ export async function enviarCorreo(
       tls: true,
       auth: {
         username: "conserjeriabosser@gmail.com",
-        password: "gsfblkmvzmjsmevw", // clave visible (SOLO PARA DENO, IMPLEMENTAR .ENV PARA PRODUCCIÓN!!!!!!!!)
+        password: "gsfblkmvzmjsmevw", // ⚠️ Reemplazar con variable de entorno en producción
       },
     },
     pool: false,
@@ -34,13 +48,11 @@ export async function enviarCorreo(
   await client.send({
     from: "conserjeriabosser@gmail.com",
     to: destinatarioEmail,
-    subject: `📦 Paquete para dpto ${departamento}`,
-    content:
-      `Hola,\n\nTu paquete de tipo "${tipoPaquete}" llegó el ${fechaStr}\n\n` +
-      `Tracking ID: ${trackingId}\n\n¡Gracias!`,
+    subject: asunto,
+    content: contenido,
   });
 
   await client.close();
 
-  console.log(`✅ Correo enviado a ${destinatarioEmail}`);
+  console.log(`✅ Correo ${esRecordatorio ? "recordatorio" : "nuevo"} enviado a ${destinatarioEmail}`);
 }
