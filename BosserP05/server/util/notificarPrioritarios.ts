@@ -1,4 +1,4 @@
-import { packages } from "../config/db.ts"; // usa la colección ya tipada
+import { packages } from "../config/db.ts"; 
 import { obtenerPaquetesPrioritarios } from "./prioridadPaquetes.ts";
 import { enviarCorreo } from "./email.ts";
 
@@ -27,7 +27,7 @@ export async function notificarPrioritarios() {
         pkg.tipo,
         fechaRecepcion,
         pkg.tracking_id,
-        true // ✅ indicar que es recordatorio
+        true // es un recordatorio
       );
 
       // 4. Actualizar fecha de última notificación
@@ -35,7 +35,7 @@ export async function notificarPrioritarios() {
         { tracking_id: pkg.tracking_id },
         {
           $set: {
-            ultima_notificacion: new Date(), // ✅ solo actualiza este campo
+            ultima_notificacion: new Date(), // actualizar fecha de notificación
           },
         }
       );
