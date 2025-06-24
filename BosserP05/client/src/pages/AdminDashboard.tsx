@@ -61,13 +61,13 @@ export default function AdminDashboard() {
           <p>¿Qué tipo de usuario deseas registrar?</p>
           <div className="d-flex justify-content-center gap-3">
             <button
-              className="btn btn-success"
+              className="btn btn-rojo-bosser"
               onClick={() => setTipoUsuario("Residente")}
             >
               Registrar Residente
             </button>
             <button
-              className="btn btn-primary"
+              className="btn btn-institucional"
               onClick={() => setTipoUsuario("Conserjeria")}
             >
               Registrar Conserje

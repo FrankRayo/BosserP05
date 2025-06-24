@@ -31,6 +31,28 @@ body {
   background-color: #c0c020; /* Amarillo oscuro al pasar el mouse */
 }
 
+.btn-rojo-bosser {
+  background-color: #DD3D33 !important;
+  color: #fff !important;
+  font-weight: bold;
+  border: none;
+}
+
+.btn-rojo-bosser:hover {
+  background-color: #b72c25 !important;
+}
+
+.btn-institucional {
+  background-color: #5e132a !important;
+  color: #fff !important;
+  font-weight: bold;
+  border: none;
+}
+
+.btn-institucional:hover {
+  background-color: #3b0d1a !important;
+}
+
 .form-label {
   color: #A9A9A9; /* Gris claro */
   font-weight: 500; /* Seminegrita */
@@ -261,7 +283,7 @@ body {
   width: 45px;
   height: 45px;
   border-radius: 50%;
-  background-color: #0d6efd;
+  background-color: #5e132a;
   color: white;
   display: flex;
   align-items: center;

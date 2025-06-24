@@ -1,12 +1,7 @@
-import { RouterContext, MongoClient } from "../../deps.ts";
+import { RouterContext } from "../../deps.ts";
 import { hash } from "https://deno.land/x/bcrypt/mod.ts"; // Usamos bcrypt para encriptar la contraseña
 import { Resident } from "../models/residentModel.ts"; // Modelo de residente
-
-// Conexión a MongoDB
-const client = new MongoClient();
-await client.connect("mongodb://127.0.0.1:27017");
-const db = client.database("gestion_paquetes");
-const residents = db.collection<Resident>("residents"); // Colección de residentes
+import { residents } from "../config/db.ts"; // <-- Usa la colección centralizada
 
 export const handler = async (ctx: RouterContext<"/api/signup_resident">) => {
   const { nombre, telefono, email, password, departamento } = await ctx.request.body({ type: "json" }).value;

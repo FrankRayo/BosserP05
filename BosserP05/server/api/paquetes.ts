@@ -1,14 +1,10 @@
-import { MongoClient, ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
+import { ObjectId } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { RouterContext } from "../../deps.ts";
 
 import { Package } from "../models/packageModel.ts";
+import { packages } from "../config/db.ts"; // <-- Usa la colección centralizada
 import { enviarCorreo } from "../util/email.ts";
 import { obtenerPaquetesPrioritarios } from "../util/prioridadPaquetes.ts";
-
-const client = new MongoClient();
-await client.connect("mongodb://127.0.0.1:27017");
-const db = client.database("gestion_paquetes");
-const packages = db.collection<Package>("packages");
 
 // Ruta para registrar un paquete
 export const handler = async (ctx: RouterContext<"/api/paquetes">) => {

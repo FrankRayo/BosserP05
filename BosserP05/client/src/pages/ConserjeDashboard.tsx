@@ -87,6 +87,7 @@ export default function ConserjeDashboard() {
         isLoading: false,
         autoClose: 2000,
       });
+      toast.success("¡Paquete registrado correctamente!"); // <-- Toast adicional de éxito
       setForm({ destinatario: "", departamento: "", tipo: "Normal" });
     } else {
       toast.update(toastId, {

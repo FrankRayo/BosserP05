@@ -1,12 +1,7 @@
 import { RouterContext } from "../../../deps.ts";
 import { hash } from "https://deno.land/x/bcrypt/mod.ts";
-import { MongoClient} from "https://deno.land/x/mongo@v0.31.1/mod.ts";
 import { Usuario } from "../../models/userModel.ts";
-
-const client = new MongoClient();
-await client.connect("mongodb://127.0.0.1:27017");
-const db = client.database("gestion_paquetes");
-const usuarios = db.collection<Usuario>("usuarios");
+import { usuarios } from "../../config/db.ts"; // <-- Usa la colección centralizada
 
 export const crearUsuarioHandler = async (ctx: RouterContext<"/api/admin/crear_usuario">) => {
   console.log("🟢 POST /api/admin/crear_usuario");
