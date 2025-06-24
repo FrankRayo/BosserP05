@@ -21,6 +21,7 @@ export default function ConserjeDashboard() {
   const [verificacion, setVerificacion] = useState({
     tracking_id: "",
     codigo_entrega: "",
+    retirado_por: "",
   });
 
   const [paquetes, setPaquetes] = useState<Package[]>([]);
@@ -31,6 +32,15 @@ export default function ConserjeDashboard() {
 
   const [mostrarModal, setMostrarModal] = useState(false);
   const [paqueteSeleccionado, setPaqueteSeleccionado] = useState<Package | null>(null);
+
+  let nombre = "Conserje";
+  const token = localStorage.getItem("token");
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      nombre = payload.nombre || "Conserje";
+    } catch {}
+  }
 
   const diasTranscurridos = (fechaRec: string) => {
     const fecha = new Date(fechaRec);
@@ -50,7 +60,7 @@ export default function ConserjeDashboard() {
 
   const abrirModal = (pkg: Package) => {
     setPaqueteSeleccionado(pkg);
-    setVerificacion({ tracking_id: pkg.tracking_id, codigo_entrega: "" });
+    setVerificacion({ tracking_id: pkg.tracking_id, codigo_entrega: "", retirado_por: "" });
     setMostrarModal(true);
   };
 
@@ -101,12 +111,13 @@ export default function ConserjeDashboard() {
 
     if (res.ok) {
       toast.update(toastId, {
-        render: result.message,
+        render: result.message || "Paquete entregado correctamente",
         type: "success",
         isLoading: false,
         autoClose: 2000,
       });
-      cerrarModal();
+      cerrarModal(); // Cierra el modal
+      // Refresca la lista de paquetes pendientes
       setSection("pendientes");
     } else {
       toast.update(toastId, {
@@ -115,6 +126,7 @@ export default function ConserjeDashboard() {
         isLoading: false,
         autoClose: 3000,
       });
+      // El modal permanece abierto para que el usuario corrija el error
     }
   };
 
@@ -182,7 +194,7 @@ export default function ConserjeDashboard() {
     <>
       <UserProfileBall
         tipo="conserje"
-        nombre="Juan Pérez" // puedes usar una variable si tienes el nombre dinámico
+        nombre={nombre}
         onLogout={handleLogout}
       />
 
@@ -248,22 +260,21 @@ export default function ConserjeDashboard() {
                         <th>Estado</th>
                         <th>Fecha de Recepción</th>
                         <th>Días</th>
+                        <th>Retirado por</th> {/* Nueva columna */}
                       </tr>
                     </thead>
                     <tbody>
-                      {paquetesFiltrados.map((pkg) => {
-                        const dias = diasTranscurridos(pkg.fecha_recepcion);
-                        return (
-                          <tr key={pkg._id}>
-                            <td>{pkg.tracking_id}</td>
-                            <td>{pkg.tipo}</td>
-                            <td>{pkg.departamento}</td>
-                            <td>{pkg.estado}</td>
-                            <td>{new Date(pkg.fecha_recepcion).toLocaleString()}</td>
-                            <td>{dias}</td>
-                          </tr>
-                        );
-                      })}
+                      {paquetesFiltrados.map((pkg) => (
+                        <tr key={pkg._id}>
+                          <td>{pkg.tracking_id}</td>
+                          <td>{pkg.tipo}</td>
+                          <td>{pkg.departamento}</td>
+                          <td>{pkg.estado}</td>
+                          <td>{new Date(pkg.fecha_recepcion).toLocaleString()}</td>
+                          <td>{diasTranscurridos(pkg.fecha_recepcion)}</td>
+                          <td>{pkg.retirado_por || "-"}</td> {/* Mostrar nombre o "-" si no existe */}
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>
@@ -338,6 +349,18 @@ export default function ConserjeDashboard() {
                               name="codigo_entrega"
                               className="form-control"
                               value={verificacion.codigo_entrega}
+                              onChange={handleVerificacionChange}
+                              required
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label htmlFor="retirado_por" className="form-label">Nombre de quien retira</label>
+                            <input
+                              type="text"
+                              id="retirado_por"
+                              name="retirado_por"
+                              className="form-control"
+                              value={verificacion.retirado_por || ""}
                               onChange={handleVerificacionChange}
                               required
                             />

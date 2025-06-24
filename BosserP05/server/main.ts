@@ -4,7 +4,15 @@ import { notificarPrioritarios } from "./util/notificarPrioritarios.ts";
 
 // Controladores
 import { handler as verifyResident } from "./api/verify_resident.ts"; // Verifica existencia de residente
-import { handler as registrarPaquete, getPaquetesResidente, marcarPaqueteRecibido, notificarPaquetesPrioritarios, getHistorialResidente, getTodosLosPaquetes } from "./api/paquetes.ts"; // Funciones relacionadas a paquetes
+import { 
+  handler as registrarPaquete, 
+  getPaquetesResidente, 
+  marcarPaqueteRecibido, 
+  notificarPaquetesPrioritarios, 
+  getHistorialResidente, 
+  getTodosLosPaquetes,
+  validarCodigoEntrega
+} from "./api/paquetes.ts"; // Funciones relacionadas a paquetes
 import { handler as signupResident } from "./api/signup_resident.ts"; // Registro de nuevos residentes
 import { loginHandler } from "./api/login.ts"; // Inicio de sesión
 import { crearUsuarioHandler } from "./api/admin/crear_usuario.ts"; // Crear usuario por Admin
@@ -28,6 +36,7 @@ router.get("/api/paquetes/historial", authMiddleware, getHistorialResidente); //
 router.get("/api/paquetes/all", authMiddleware, getTodosLosPaquetes);         // Obtener todos los paquetes (vista conserjería)
 router.put("/api/paquetes/:id/recibido", authMiddleware, marcarPaqueteRecibido); // Marcar paquete como recibido
 router.get("/api/paquetes/notificar-prioritarios", notificarPaquetesPrioritarios); // Notificar por email paquetes prioritarios
+router.post("/api/paquetes/validar-codigo", validarCodigoEntrega); // <-- agrega esta línea
 
 // ==== Servir archivos estáticos (frontend) ====
 app.use(oakCors());

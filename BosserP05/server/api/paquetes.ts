@@ -82,7 +82,7 @@ export const validarCodigoEntrega = async (
   ctx: RouterContext<"/api/paquetes/validar-codigo">
 ) => {
   try {
-    const { tracking_id, codigo_entrega } = await ctx.request.body({ type: "json" }).value;
+    const { tracking_id, codigo_entrega, retirado_por } = await ctx.request.body({ type: "json" }).value;
 
     const paquete = await packages.findOne({ tracking_id });
     if (!paquete) {
@@ -94,7 +94,12 @@ export const validarCodigoEntrega = async (
     if (paquete.codigo_entrega === codigo_entrega) {
       await packages.updateOne(
         { tracking_id },
-        { $set: { estado: "Entregado" } }
+        { $set: { 
+            estado: "Entregado",
+            retirado_por: retirado_por || "Residente",
+            fecha_retiro: new Date()
+          } 
+        }
       );
       ctx.response.status = 200;
       ctx.response.body = { message: "Código válido. Paquete entregado." };
@@ -263,5 +268,31 @@ export const getTodosLosPaquetes = async (
     console.error("Error en getTodosLosPaquetes:", err);
     ctx.response.status = 500;
     ctx.response.body = { error: "Error al obtener todos los paquetes" };
+  }
+};
+
+export const retirarPaquete = async (
+  ctx: RouterContext<"/api/paquetes/:id/retirar">
+) => {
+  try {
+    const id = ctx.params.id;
+    if (!id) {
+      ctx.response.status = 400;
+      ctx.response.body = { message: "ID del paquete es requerido" };
+      return;
+    }
+
+    const { retirado_por } = await ctx.request.body({ type: "json" }).value;
+    await packages.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { estado: "Entregado", retirado_por, fecha_retiro: new Date() } }
+    );
+
+    ctx.response.status = 200;
+    ctx.response.body = { message: "Paquete marcado como retirado" };
+  } catch (error) {
+    console.error("Error en retirarPaquete:", error);
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Error actualizando el paquete" };
   }
 };
