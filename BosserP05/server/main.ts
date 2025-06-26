@@ -1,6 +1,8 @@
-import { Application, Router, oakCors } from "../../deps.ts";
+import { Application, Router, oakCors } from "../deps.ts";
 import routeStaticFilesFrom from "./util/routeStaticFilesFrom.ts";
 import { notificarPrioritarios } from "./util/notificarPrioritarios.ts";
+import { packages } from "./config/db.ts";
+import { obtenerPaquetesPrioritarios } from "./util/prioridadPaquetes.ts";
 
 // Controladores
 import { handler as verifyResident } from "./api/verify_resident.ts"; // Verifica existencia de residente
@@ -35,6 +37,18 @@ router.get("/api/paquetes/residente", authMiddleware, getPaquetesResidente); // 
 router.get("/api/paquetes/historial", authMiddleware, getHistorialResidente); // Obtener historial de paquetes de un residente
 router.get("/api/paquetes/all", authMiddleware, getTodosLosPaquetes);         // Obtener todos los paquetes (vista conserjería)
 router.put("/api/paquetes/:id/recibido", authMiddleware, marcarPaqueteRecibido); // Marcar paquete como recibido
+// Endpoint para obtener paquetes prioritarios (solo datos, no notifica por email)
+router.get("/api/paquetes/prioritarios", authMiddleware, async (ctx) => {
+  try {
+    const paquetesPendientes = await packages.find({ estado: "Pendiente" }).toArray();
+    const prioritarios = obtenerPaquetesPrioritarios(paquetesPendientes);
+    ctx.response.status = 200;
+    ctx.response.body = { paquetes: prioritarios };
+  } catch (_err) {
+    ctx.response.status = 500;
+    ctx.response.body = { error: "Error al obtener paquetes prioritarios" };
+  }
+});
 router.get("/api/paquetes/notificar-prioritarios", notificarPaquetesPrioritarios); // Notificar por email paquetes prioritarios
 router.post("/api/paquetes/validar-codigo", validarCodigoEntrega); // <-- agrega esta línea
 

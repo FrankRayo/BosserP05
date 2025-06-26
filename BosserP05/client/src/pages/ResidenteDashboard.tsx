@@ -3,9 +3,8 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import SidebarResidente from "../components/SidebarResidente.tsx";
 import NavbarResidente from "../components/NavbarResidente.tsx";
 import { useIsMobile } from "../hooks/useIsMobile.ts";
-import type { Package } from "../../../server/models/packageModel.ts";
+import type { Package } from "../types/package.ts";
 import UserProfileBall from "../components/UserProfileBall.tsx";
-import { obtenerPaquetesPrioritarios } from "../../../server/util/prioridadPaquetes.ts"; // ajusta ruta
 import { useNavigate } from "react-router-dom";
 
 export default function ResidenteDashboard() {
@@ -21,6 +20,8 @@ export default function ResidenteDashboard() {
   const [historialError, setHistorialError] = useState<string | null>(null);
   const [historialPage, setHistorialPage] = useState(1);
   const [historialPages, setHistorialPages] = useState(1);
+
+  const [paquetesPrioritarios, setPaquetesPrioritarios] = useState<Package[]>([]);
 
   const navigate = useNavigate();
 
@@ -93,6 +94,20 @@ export default function ResidenteDashboard() {
       .finally(() => setHistorialLoading(false));
   }, [section, historialPage]);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    fetch("/api/paquetes/notificar-prioritarios", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setPaquetesPrioritarios(data.paquetes || []))
+      .catch(() => setPaquetesPrioritarios([]));
+  }, []);
+
   async function marcarRecibido(id: string) {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -125,7 +140,7 @@ export default function ResidenteDashboard() {
       departamento = payload.departamento || "";
     } catch {}
   }
-  const paquetesPrioritarios = obtenerPaquetesPrioritarios(paquetes);
+
 
 
   const handleLogout = () => {

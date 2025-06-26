@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./BosserP05/client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    working_dir: /app
+    volumes:
+      - ./BosserP05/client:/app
+    command: ["task", "dev"]
+    environment:
+      - DENO_DIR=/deno-dir
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./BosserP05
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    working_dir: /app
+    volumes:
+      - ./BosserP05:/app
+    command: ["run", "--allow-env", "--allow-read", "--allow-net", "server/main.ts"]
+    environment:
+      - DENO_DIR=/deno-dir

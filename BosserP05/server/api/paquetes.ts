@@ -45,7 +45,8 @@ export const handler = async (ctx: RouterContext<"/api/paquetes">) => {
         departamento,
         tipo,
         newPackage.fecha_recepcion,
-        tracking_id
+        tracking_id,
+        codigo_entrega // <--- ahora se pasa como argumento
       );
       await packages.updateOne(
         { _id: result },

@@ -1,6 +1,6 @@
 // src/components/UserProfileBall.tsx
 import React, { useState } from "react";
-import type { Package } from "../../../server/models/packageModel.ts"; // importa el tipo Package si lo necesitas
+import type { Package } from "../types/package.ts";
 
 type Props = {
   tipo: "conserje" | "residente";
@@ -16,7 +16,14 @@ export default function UserProfileBall({ tipo, nombre, departamento, onLogout, 
   const handleToggle = () => setOpen(!open);
   const handleLogout = () => {
     setOpen(false);
+    // Eliminar token de sesión y datos de usuario
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    localStorage.removeItem("correo");
+    localStorage.removeItem("userType");
     onLogout();
+    // Redirigir a la raíz absoluta
+    globalThis.location.href = "http://localhost:3000/";
   };
 
   const displayText = tipo === "conserje" ? nombre[0].toUpperCase() : departamento;
@@ -42,7 +49,7 @@ export default function UserProfileBall({ tipo, nombre, departamento, onLogout, 
               )}
             </>
           )}
-          <button className="logout-btn" onClick={handleLogout}>
+          <button className="logout-btn" type="button" onClick={handleLogout}>
             Cerrar sesión
           </button>
         </div>

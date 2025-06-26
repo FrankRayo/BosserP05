@@ -1,17 +1,28 @@
 # Usar la imagen oficial de Deno
-FROM denoland/deno:alpine-1.27.1
+FROM denoland/deno:alpine-2.3.6
 
-# Establecer el directorio de trabajo dentro del contenedor
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Copiar los archivos del proyecto al contenedor
+# Variables de entorno (debe ir antes de cualquier comando Deno)
+ENV PORT=8000
+ENV MONGODB_URI=""
+ENV DENO_DIR=/app/.deno_cache
+
+# Copiar todo el proyecto (incluye deps.ts)
 COPY . .
 
-# Instalar las dependencias de Deno
-RUN deno cache deps.ts
+# Crear directorio para la caché de Deno y dar permisos al usuario deno
+RUN mkdir -p /app/.deno_cache && chown deno:deno /app/.deno_cache
 
-# Exponer el puerto en el que el servidor se ejecutará (ajustar si es necesario)
+# Usar el caché correcto al hacer deno cache
+RUN DENO_DIR=/app/.deno_cache deno cache deps.ts
+
+# Exponer el puerto
 EXPOSE 8000
 
+# Ejecutar como usuario no-root por seguridad
+USER deno
+
 # Comando para ejecutar el servidor
-CMD ["deno", "run", "--allow-net", "--allow-read", "server/main.ts"]
+CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "server/main.ts"]

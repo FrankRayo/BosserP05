@@ -9,9 +9,10 @@ export async function enviarCorreo(
   tipoPaquete: string,
   fechaRecepcion: Date,
   trackingId: string,
+  codigo_entrega: string, // <--- nombre igual que en paquetes.ts
   esRecordatorio = false // ✅ nuevo parámetro opcional
 ) {
-  const fechaStr = fechaRecepcion.toLocaleString("en-US", {
+  const fechaStr = fechaRecepcion.toLocaleString("es-CL", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -26,9 +27,9 @@ export async function enviarCorreo(
 
   const contenido = esRecordatorio
     ? `Hola,\n\nTe recordamos que aún tienes un paquete de tipo "${tipoPaquete}" recibido el ${fechaStr}.\n\n` +
-      `Tracking ID: ${trackingId}\n\nPor favor, acércate a retirarlo lo antes posible.`
+      `Tracking ID: ${trackingId}\nCódigo de entrega: ${codigo_entrega}\n\nPor favor, acércate a retirarlo lo antes posible.`
     : `Hola,\n\nTu paquete de tipo "${tipoPaquete}" llegó el ${fechaStr}.\n\n` +
-      `Tracking ID: ${trackingId}\n\n¡Gracias!`;
+      `Tracking ID: ${trackingId}\nCódigo de entrega: ${codigo_entrega}\n\n¡Gracias!`;
 
   const client = new SMTPClient({
     connection: {

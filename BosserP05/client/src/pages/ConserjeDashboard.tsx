@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import SidebarConserje from "../components/SidebarConserje.tsx";
 import NavbarConserje from "../components/NavbarConserje.tsx";
 import { useIsMobile } from "../hooks/useIsMobile.ts";
-import type { Package } from "../../../server/models/packageModel.ts";
+import type { Package } from "../types/package.ts";
 import { toast } from "react-toastify";
 import UserProfileBall from "../components/UserProfileBall.tsx";
 import { useNavigate } from "react-router-dom";
@@ -378,6 +378,8 @@ export default function ConserjeDashboard() {
               )}
             </>
           )}
+
+         
         </div>
       </div>
     </>

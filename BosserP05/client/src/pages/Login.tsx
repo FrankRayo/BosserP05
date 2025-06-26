@@ -63,7 +63,7 @@ export default function Login() {
     >
       <div className="login-wrapper p-4">
         <h1 className="mb-4" style={{ color: "#990000" }}>
-          Inicio de Sesión - Sistema de Encomiendas
+          Inicio de Sesión
         </h1>
 
         <div

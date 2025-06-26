@@ -1,7 +1,7 @@
 // client/src/pages/Home.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import type { Package } from "../../../server/models/packageModel.ts";
+import type { Package } from "../types/package.ts";
 import Sidebar from "../components/Header.tsx";
 import { toast, ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';

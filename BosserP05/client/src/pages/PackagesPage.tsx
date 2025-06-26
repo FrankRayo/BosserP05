@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type { Package } from "../../../server/models/packageModel.ts"; // asegúrate de importar el tipo
+import type { Package } from "../types/package.ts";
 import { useNavigate } from "react-router-dom"; // Importa el hook useNavigate
 
 export default function PackagesPage() {
